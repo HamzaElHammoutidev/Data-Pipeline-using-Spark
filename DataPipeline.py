@@ -44,15 +44,22 @@ data_files = {
 Source = Gather(spark,data_files)
 
 #airlines = Source.get_airlines_data()
-#immigration = Source.get_immigration_data()
-airports = Source.get_airports_data()
+immigration = Source.get_immigration_data()
+#airports = Source.get_airports_data()
 #cities = Source.get_cities_data()
 #countries = Source.get_countries_data()
-#mode = Source.get_mode_data()
+#mode = Source.get_mode_data()cleanning_immigration_data
 #demographics = Source.get_demographics_data()
 #states = Source.get_states_data()
 #visa = Source.get_visa_data()
 
 #demographics = Cleaner.cleaning_demographics_data(demographics)
+#airports = Cleaner.cleanning_airports_data(airports)
+#print(immigration.describe())
+immigration = Cleaner.cleanning_immigration_data(immigration)
+print(immigration.head())
+#print(spark.read.csv("").select(F.col('type')))
 
-airp = spark.read.csv("data/airport-codes_csv.csv").where(F.col('iso_country' == ))
+
+
+
