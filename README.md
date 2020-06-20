@@ -14,4 +14,4 @@ Building data pipeline from different sources using Schema-on-read on Spark for 
     - Step 4
     
 # Datasets : 
-    ![Data Lineage](https://github.com/HamzaElHammoutidev/Data-Pipeline-using-Spark/blob/master/SourcesImage.png)
+![Data Lineage](https://github.com/HamzaElHammoutidev/Data-Pipeline-using-Spark/blob/master/SourcesImage.png)
