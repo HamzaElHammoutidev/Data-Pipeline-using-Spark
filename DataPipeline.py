@@ -89,8 +89,8 @@ fact_immigration = fact_immigration \
             .join(dim_visa, fact_immigration["immigration_visa_code"] == dim_visa["visa_code"], "left_semi") \
             .join(dim_mode, fact_immigration["immigration_arrival_mode"] == dim_mode["mode_code"], "left_semi")
 
-fact_immigration = fact_immigration.repartition("immigration_country_state")
-fact_immigration.write.partitionBy('immigration_country_state').parquet("data/output/immigration")
+fact_immigration = fact_immigration.repartition("immigration_arrival_date")
+fact_immigration.write.partitionBy('immigration_arrival_date').parquet("data/output/immigration")
 
 
 loading_parquet = {
