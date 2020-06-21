@@ -1,14 +1,15 @@
 
 # Data Pipeline using Spark   
-US Immigration data pipeline from different sources using Schema-on-read on Spark for processing large files [/data]:   
-   
+
+Bulding US Immigrtion data pipleline that pulls data from differents sources and create star schema ETL. Spark used for processing large files follwoing Schema-on-read principle. Data can be found at [/data]
+ 
  - Files Types :   
    - .dat   
    - .csv   
    - .parquet [sas data]  
 
  - Steps :   
-   - Data gathering from different sources 
+   - Data gathering from all sources 
    - Data exploration 
    - End use-case definition
    - Data processing and cleansing
