@@ -1,7 +1,7 @@
 
 # Data Pipeline using Spark   
 
-Bulding US Immigrtion data pipleline that pulls data from differents sources and create star schema ETL. Spark used for processing large files follwoing Schema-on-read principle. Data can be found at [/data]
+US Immigrtion data pipeline that pulls data from differents sources and create star schema ETL. Spark used for processing large files follwoing Schema-on-read principle. Data can be found at [/data]
  
  - Files Types :   
    - .dat   
