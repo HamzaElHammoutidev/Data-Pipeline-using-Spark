@@ -6,13 +6,13 @@ from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from helpers.gather import Gather
 from helpers.cleaner import Cleaner
+from helpers.modeler import Modeler
 
 spark = SparkSession.builder.config("spark.jars.packages","saurfang:spark-sas7bdat:2.0.0-s_2.11").appName("ImmigrationProject").getOrCreate()
 
-
 # Scope The Project and Gather Data
 """
-Since We are processing large files from different soucrs we will use Spark and Schema on read 
+Since We are processing large files from different soucrs we will use Spark and head() on read 
 1  - Check different Files Types from Different Sources : 
     - Csv
     - Dat 
@@ -40,26 +40,40 @@ data_files = {
     "states":"data/us_states.csv",
     "visa":"data/visa.csv"
 }
-
 Source = Gather(spark,data_files)
 
-#airlines = Source.get_airlines_data()
+## Data Gathering From Sources Files
+airlines = Source.get_airlines_data()
 immigration = Source.get_immigration_data()
-#airports = Source.get_airports_data()
-#cities = Source.get_cities_data()
-#countries = Source.get_countries_data()
-#mode = Source.get_mode_data()cleanning_immigration_data
-#demographics = Source.get_demographics_data()
-#states = Source.get_states_data()
-#visa = Source.get_visa_data()
+airports = Source.get_airports_data()
+cities = Source.get_cities_data()
+countries = Source.get_countries_data()
+mode = Source.get_mode_data()
+demographics = Source.get_demographics_data()
+states = Source.get_states_data()
+visa = Source.get_visa_data()
 
-#demographics = Cleaner.cleaning_demographics_data(demographics)
-#airports = Cleaner.cleanning_airports_data(airports)
-#print(immigration.describe())
-immigration = Cleaner.cleanning_immigration_data(immigration)
+
+## Data Processing & Cleansing
+demographics = Cleaner.cleansing_demographics(demographics)
+airports = Cleaner.cleansing_airports(airports)
+immigration = Cleaner.cleansing_immigration(immigration)
+countries = Cleaner.cleansing_countries(countries)
+mode = Cleaner.cleansing_mode(mode)
+visa = Cleaner.cleansing_visa(visa)
+airlines = Cleaner.cleansing_airlines(airlines)
+
+# After Data Modeling : Creating Data Model
+dim_demographics = Modeler.dim_demographics(demographics)
+
+# Describe data after Modeling
+print(demographics.head())
+print(airports.head())
 print(immigration.head())
-#print(spark.read.csv("").select(F.col('type')))
-
-
-
+print(cities.head())
+print(countries.head())
+print(mode.head())
+print(visa.head())
+print(states.head())
+print(airlines.head())
 

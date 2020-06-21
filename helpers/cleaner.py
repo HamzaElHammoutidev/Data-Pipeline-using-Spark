@@ -18,29 +18,43 @@ class Cleaner():
         self.spark = spark
 
     @staticmethod
-    def cleaning_demographics_data(dataFrame):
+    def cleansing_demographics(dataFrame):
         # filling null with 0
         dataFrame = dataFrame.na.fill({
             'Median Age':0,'Male Population':0,'Female Population':0,'Total Population':0,'Number of Veterans':0,
             "Foreign-born":0,'Average Household Size':0,'Count':0,
         })
-        dataFrame =dataFrame.dropDuplicates()
+        dataFrame =dataFrame.withColumn('demo_state_code',F.col('State Code')).drop('State Code')\
+            .withColumn('demo_other_races_count',F.col('Total Population') - F.col('Count'))\
+            .withColumn("demo_median_age",F.col("Median Age")).drop("Median Age")\
+            .withColumn("demo_male_population",F.col("Male Population")).drop("Male Population")\
+            .withColumn("demo_total_population",F.col('Total Population')).drop("Total Population")\
+            .withColumn("demo_race_count", F.col('count')).drop("count") \
+            .withColumn("demo_city", F.col('city')).drop("city") \
+            .withColumn("demo_state", F.col('state')).drop("state") \
+            .withColumn("demo_race", F.col('race')).drop("race") \
+ \
+            #.dropDuplicates()
         return dataFrame
 
     @staticmethod
-    def cleanning_airports_data(dataFrame):
+    def cleansing_airports(dataFrame):
         dataFrame = dataFrame.where((F.col('iso_country') == "US") & (F.col('type').isin('small_airport','medium_airport','large_airport'))).\
         withColumn('iso_region', F.substring(F.col('iso_region'),4,2))
 
         return dataFrame
 
     @staticmethod
-    def cleanning_immigration_data(dateFrame):
-        dataFrame = dateFrame.withColumn("immigration_id", F.col('cicid').cast('integer')).withColumn(
+    def cleansing_immigration(dateFrame):
+        dataFrame = dateFrame.withColumn("immigration_id", F.col('cicid').cast('integer')).\
+            withColumn(
             'immigration_year', F.col('i94yr').cast('integer')). \
-            withColumn("immigration_month", F.col("i94mon").cast("integer")).withColumn(
-            'immigration_country_cit', F.col('i94cit')).withColumn(
-            'immigration_visa_post', F.col('visapost')).withColumn(
+            withColumn("immigration_month", F.col("i94mon").cast("integer")).\
+            withColumn(
+            'immigration_country_cit', F.col('i94cit')).\
+            withColumn(
+            'immigration_visa_post', F.col('visapost')).\
+            withColumn(
             'immigration_expiration_data', F.col('dtaddto')). \
             withColumn("immigration_country_origin", F.col("i94res")).withColumn('immigration_country_port',
                                                                                  F.col("i94port")). \
@@ -48,20 +62,26 @@ class Cleaner():
                                                                                  F.to_date(F.lit('10/01/1960'),
                                                                                            "MM/dd/yyyy")).withColumn(
             'arrdate_int', F.col('arrdate').cast('int')). \
-            withColumn('depdate_int', F.col('depdate').cast('int')).withColumn("immigration_arrival_data", F.expr(
-            "date_add(date_base, arrdate_int)")). \
-            withColumn("immigration_departure_date", F.expr("date_add(date_base,depdate_int)")) \
-            .withColumn("immigration_arrival_mode", F.col("i94mode")).withColumn('age', F.col('i94bir').cast(
-            "integer")).withColumn('immigration_visa_code', F.col('i94visa').cast('integer')) \
-            .withColumn("immigration_count", F.col('count').cast('int')).withColumn("immigration_admission_number",
-                                                                                    F.col('admnum').cast('integer')) \
-            .withColumn('immigration_flight_number', F.col('fltno')).withColumn('immigration_visa_type',
-                                                                                       F.col('visatype')) \
-            .withColumn("bird_year", F.col("biryear").cast("integer")). \
+            withColumn('depdate_int', F.col('depdate').cast('int')).\
+            withColumn("immigration_arrival_date", F.expr("date_add(date_base, arrdate_int)")). \
+            withColumn("immigration_departure_date", F.expr("date_add(date_base,depdate_int)")).\
+            withColumn("immigration_arrival_month",F.month(F.col('immigration_arrival_date'))). \
+            withColumn("immigration_arrival_year", F.year(F.col('immigration_arrival_date'))). \
+            withColumn("immigration_departure_year", F.month(F.col('immigration_departure_date'))). \
+            withColumn("immigration_departure_month", F.year(F.col('immigration_departure_date'))). \
+            withColumn("immigration_arrival_mode", F.col("i94mode")).\
+            withColumn('age', F.col('i94bir').cast("integer")).\
+            withColumn('immigration_visa_code', F.col('i94visa').cast('integer')).\
+            withColumn("immigration_count", F.col('count').cast('int')).\
+            withColumn("immigration_admission_number",F.col('admnum').cast('integer')).\
+            withColumn('immigration_flight_number', F.col('fltno')).withColumn('immigration_visa_type',F.col('visatype')) \
+            .withColumn("bird_year", F.col("biryear").cast("integer")).\
             drop("cicid").drop("i94yr").drop("i94mon").drop("i94cit").drop("i94res").drop("i94port").drop(
             "i94addr").drop("date_base").drop('dtaddto'). \
             drop("arrdate").drop("depdate").drop("i94mode").drop("i94bir").drop("i94visa").drop("fltno").drop(
             "visatype").drop("arrdate_int").drop("depdate_int").drop("admnum").drop("biryear").drop("visapost")
+
+
         return dataFrame.select(F.col("immigration_id"), F.col("immigration_country_port"),
                                 F.col("immigration_country_state"), F.col("immigration_visa_post"), F.col("matflag"),
                                 F.col("immigration_expiration_data")
@@ -71,33 +91,40 @@ class Cleaner():
                                 , F.col("immigration_country_origin"), F.col("immigration_country_cit"),
                                 F.col("immigration_year"), F.col("immigration_month"),
                                 F.col("bird_year")
-                                , F.col("age"), F.col("immigration_count"), F.col("immigration_arrival_data"),
-                                F.col("immigration_departure_date"))
+                                , F.col("age"), F.col("immigration_count"), F.col("immigration_arrival_date"),
+                                F.col("immigration_departure_date"),F.col("immigration_arrival_month"),
+                                F.col("immigration_departure_month"),F.col("immigration_arrival_year"),
+                                F.col("immigration_departure_year"))
 
     @staticmethod
-    def get_countries(countries):
+    def cleansing_countries(countries):
         country = countries \
-            .withColumn("code", "immigration_country_code")
+            .withColumn("immigration_country_code", F.col('code')).drop("code").dropDuplicates()
         return country
 
     @staticmethod
-    def get_visa(visa):
+    def cleansing_visa(visa):
         visa = visa \
-            .withColumn("visa_code", "immigration_visa_code")
+            .withColumn("immigration_visa_code", F.col("visa_code")).drop("visa_code").dropDuplicates()
         return visa
 
     @staticmethod
-    def get_mode(mode):
+    def cleansing_mode(mode):
         modes = mode \
             .withColumn("immmigration_mode_code", F.col("cod_mode").cast("integer")) \
-            .withColumn(" mode_name", "immigration_mode_name")
+            .withColumn("immigration_mode_name", F.col(" mode_name")).drop("cod_mode").drop("mode_name").dropDuplicates()
         return modes
 
     @staticmethod
-    def get_airlines(airlines):
+    def cleansing_airlines(airlines):
         airlines = airlines \
             .where((F.col("IATA").isNotNull()) & (F.col("Airline_ID") > 1)) \
-            .drop("Alias")
+            .drop("Alias").dropDuplicates()
 
         return airlines
+
+    @staticmethod
+    def denomarlization_demographics_states(demographics,states):
+        df = demographics.join(states,demographics.State_Code == states.Abbreviation).drop("Abbreviation")
+        return df
 
