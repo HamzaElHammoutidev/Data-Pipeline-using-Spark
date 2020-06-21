@@ -77,6 +77,7 @@ class Cleaner():
                                                                                            "MM/dd/yyyy")).withColumn(
             'arrdate_int', F.col('arrdate').cast('int')). \
             withColumn('depdate_int', F.col('depdate').cast('int')).\
+            withColumn('immigration_airline', F.col('airline')).\
             withColumn("immigration_arrival_date", F.expr("date_add(date_base, arrdate_int)")). \
             withColumn("immigration_departure_date", F.expr("date_add(date_base,depdate_int)")).\
             withColumn("immigration_arrival_month",F.month(F.col('immigration_arrival_date'))). \
@@ -93,13 +94,13 @@ class Cleaner():
             drop("cicid").drop("i94yr").drop("i94mon").drop("i94cit").drop("i94res").drop("i94port").drop(
             "i94addr").drop("date_base").drop('dtaddto'). \
             drop("arrdate").drop("depdate").drop("i94mode").drop("i94bir").drop("i94visa").drop("fltno").drop(
-            "visatype").drop("arrdate_int").drop("depdate_int").drop("admnum").drop("biryear").drop("visapost")
+            "visatype").drop("arrdate_int").drop("depdate_int").drop("admnum").drop("biryear").drop("visapost").drop("airline")
 
 
         return dataFrame.select(F.col("immigration_id"), F.col("immigration_country_port"),
                                 F.col("immigration_country_state"), F.col("immigration_visa_post"), F.col("matflag"),
                                 F.col("immigration_expiration_data")
-                                , F.col("gender"), F.col("airline"), F.col("immigration_admission_number"),
+                                , F.col("gender"), F.col("immigration_admission_number"),
                                 F.col("immigration_flight_number"), F.col("immigration_visa_type"),
                                 F.col("immigration_visa_code"), F.col("immigration_arrival_mode")
                                 , F.col("immigration_country_origin"), F.col("immigration_country_cit"),
@@ -108,7 +109,7 @@ class Cleaner():
                                 , F.col("age"), F.col("immigration_count"), F.col("immigration_arrival_date"),
                                 F.col("immigration_departure_date"),F.col("immigration_arrival_month"),
                                 F.col("immigration_departure_month"),F.col("immigration_arrival_year"),
-                                F.col("immigration_departure_year"))
+                                F.col("immigration_departure_year"),F.col("immigration_airline"))
 
     @staticmethod
     def cleansing_countries(countries):
@@ -120,7 +121,7 @@ class Cleaner():
     @staticmethod
     def cleansing_visa(visa):
         visa = visa \
-            .withColumn("visa_code", F.col("visa_code")).drop("visa_code").\
+            .withColumn("visa_code", F.col("visa_code")).\
             withColumn("visa_name", F.col("visa")).drop("visa").dropDuplicates()
         return visa
 
