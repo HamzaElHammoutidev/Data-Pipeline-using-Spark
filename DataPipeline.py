@@ -6,7 +6,6 @@ from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from helpers.gather import Gather
 from helpers.cleaner import Cleaner
-from helpers.modeler import Modeler
 
 spark = SparkSession.builder.config("spark.jars.packages","saurfang:spark-sas7bdat:2.0.0-s_2.11").appName("ImmigrationProject").getOrCreate()
 
@@ -54,26 +53,32 @@ states = Source.get_states_data()
 visa = Source.get_visa_data()
 
 
-## Data Processing & Cleansing
-demographics = Cleaner.cleansing_demographics(demographics)
-airports = Cleaner.cleansing_airports(airports)
-immigration = Cleaner.cleansing_immigration(immigration)
-countries = Cleaner.cleansing_countries(countries)
-mode = Cleaner.cleansing_mode(mode)
-visa = Cleaner.cleansing_visa(visa)
-airlines = Cleaner.cleansing_airlines(airlines)
+## Data Processing & Cleansing & Modeling
+dim_demographics = Cleaner.cleansing_demographics(demographics)
+dim_airports = Cleaner.cleansing_airports(airports)
+fact_immigration = Cleaner.cleansing_immigration(immigration)
+dim_countries = Cleaner.cleansing_countries(countries)
+dim_mode = Cleaner.cleansing_mode(mode)
+dim_visa = Cleaner.cleansing_visa(visa)
+dim_airlines = Cleaner.cleansing_airlines(airlines)
 
-# After Data Modeling : Creating Data Model
-dim_demographics = Modeler.dim_demographics(demographics)
-
-# Describe data after Modeling
-print(demographics.head())
-print(airports.head())
-print(immigration.head())
-print(cities.head())
-print(countries.head())
-print(mode.head())
-print(visa.head())
-print(states.head())
-print(airlines.head())
+"""
+# data after Modeling
+print(dim_demographics.head())
+print(dim_airports.head())
+print(fact_immigration.head())
+print(dim_countries.head())
+print(dim_mode.head())
+print(dim_visa.head())
+print(dim_airlines.head())
+"""
+# loading to Parquet
+dim_demographics.write.parquet("data/output/demographics")
+dim_airports.write.parquet("data/output/airports")
+dim_countries.write.parquet("data/output/countries")
+dim_airlines.write.parquet("data/output/airlines")
+dim_mode.write.parquet("data/output/mode")
+dim_visa.write.parquet("data/output/visa")
+fact_immigration = fact_immigration.repartition("immigration_country_state")
+fact_immigration.write.partitionBy('immigration_country_state').parquet("data/output/immigration")
 

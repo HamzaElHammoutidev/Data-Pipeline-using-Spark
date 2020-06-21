@@ -32,16 +32,30 @@ class Cleaner():
             .withColumn("demo_race_count", F.col('count')).drop("count") \
             .withColumn("demo_city", F.col('city')).drop("city") \
             .withColumn("demo_state", F.col('state')).drop("state") \
-            .withColumn("demo_race", F.col('race')).drop("race") \
- \
+            .withColumn("demo_race", F.col('race')).drop("race").\
+            select("demo_state_code","demo_state","demo_median_age","demo_male_population","demo_total_population","demo_city"
+                                   ,"demo_race","demo_race_count","demo_other_races_count").dropDuplicates()
+
+
             #.dropDuplicates()
         return dataFrame
 
     @staticmethod
     def cleansing_airports(dataFrame):
         dataFrame = dataFrame.where((F.col('iso_country') == "US") & (F.col('type').isin('small_airport','medium_airport','large_airport'))).\
-        withColumn('iso_region', F.substring(F.col('iso_region'),4,2))
-
+        withColumn('iso_region', F.substring(F.col('iso_region'),4,2)).\
+            withColumn("airport_identifiant", F.col("ident")).drop("ident"). \
+            withColumn("airport_type", F.col("type")).drop("type"). \
+            withColumn("airport_name", F.col("name")).drop("name"). \
+            withColumn("airport_elevation_ft", F.col("elevation_ft")).drop("elevation_ft"). \
+            withColumn("airport_continent", F.col("continent")).drop("continent"). \
+            withColumn("airport_iso_country", F.col("iso_country")).drop("iso_country"). \
+            withColumn("airport_region_country", F.col("iso_region")).drop("iso_region"). \
+            withColumn("airport_municipality", F.col("municipality")).drop("municipality"). \
+            withColumn("airport_gps_code", F.col("gps_code")).drop("gps_code"). \
+            withColumn("airport_iata_code", F.col("iata_code")).drop("iata_code"). \
+            withColumn("airport_local_code", F.col("local_code")).drop("local_code"). \
+            withColumn("airport_coordinates", F.col("coordinates")).drop("coordinates").dropDuplicates()
         return dataFrame
 
     @staticmethod
@@ -99,32 +113,36 @@ class Cleaner():
     @staticmethod
     def cleansing_countries(countries):
         country = countries \
-            .withColumn("immigration_country_code", F.col('code')).drop("code").dropDuplicates()
+            .withColumn("country_code", F.col('code')).drop("code").\
+            withColumn("country_name", F.col('Country_name')).drop("Country_name").dropDuplicates()
         return country
 
     @staticmethod
     def cleansing_visa(visa):
         visa = visa \
-            .withColumn("immigration_visa_code", F.col("visa_code")).drop("visa_code").dropDuplicates()
+            .withColumn("visa_code", F.col("visa_code")).drop("visa_code").\
+            withColumn("visa_name", F.col("visa")).drop("visa").dropDuplicates()
         return visa
 
     @staticmethod
     def cleansing_mode(mode):
         modes = mode \
-            .withColumn("immmigration_mode_code", F.col("cod_mode").cast("integer")) \
-            .withColumn("immigration_mode_name", F.col(" mode_name")).drop("cod_mode").drop("mode_name").dropDuplicates()
+            .withColumn("mode_code", F.col("cod_mode").cast("integer")) \
+            .withColumn("mode_name", F.col(" mode_name")).drop("cod_mode").drop(" mode_name").dropDuplicates()
         return modes
 
     @staticmethod
     def cleansing_airlines(airlines):
         airlines = airlines \
             .where((F.col("IATA").isNotNull()) & (F.col("Airline_ID") > 1)) \
-            .drop("Alias").dropDuplicates()
+            .drop("Alias").\
+            withColumn("airline_id",F.col("Airline_ID")). \
+            withColumn("airline_name", F.col("Name")).drop("Name"). \
+            withColumn("airline_tata", F.col("IATA")).drop("IATA"). \
+            withColumn("airline_icao", F.col("ICAO")).drop("ICAO"). \
+            withColumn("airline_callsign", F.col("Callsign")).drop("Callsign"). \
+            withColumn("airline_country", F.col("Country")).drop("Country"). \
+            withColumn("airline_active", F.col("Active")).drop("Active").dropDuplicates()
 
         return airlines
-
-    @staticmethod
-    def denomarlization_demographics_states(demographics,states):
-        df = demographics.join(states,demographics.State_Code == states.Abbreviation).drop("Abbreviation")
-        return df
 
